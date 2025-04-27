@@ -241,7 +241,11 @@ with tab2:
                 use_container_width=True
             )
 
-        st.markdown("<h3>📂 Upload History</h3)
+        st.markdown("<h3>📂 Upload History</h3>", unsafe_allow_html=True)
+        for item in st.session_state.history[::-1]:
+            st.write(f"• {item['file_name']} - Match: {item['match']}")
+    else:
+        st.info("📎 Upload and analyze a resume to see results here.")
 
 # Footer
 st.markdown("<div class='footer'>Made with ❤️ using Streamlit and Gemini 1.5 Flash | Ultra Pro Version 🚀</div>", unsafe_allow_html=True)
