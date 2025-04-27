@@ -241,7 +241,7 @@ with tab2:
                 use_container_width=True
             )
 
-        st.markdown("<h3>📂 Upload History</h3
+        st.markdown("<h3>📂 Upload History</h3)
 
 # Footer
 st.markdown("<div class='footer'>Made with ❤️ using Streamlit and Gemini 1.5 Flash | Ultra Pro Version 🚀</div>", unsafe_allow_html=True)
