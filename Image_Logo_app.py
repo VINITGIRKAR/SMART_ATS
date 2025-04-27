@@ -149,7 +149,8 @@ img {{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 150px;  /* Adjust logo size */
+    width: 350px;  /* Adjust logo width */
+    height: auto;  /* Keep the aspect ratio */
     padding: 20px 0;
 }}
 </style>
@@ -158,8 +159,8 @@ img {{
 # Title
 st.markdown("<h1>Smart ATS 🧠</h1>", unsafe_allow_html=True)
 
-# Logo (Upload image)
-st.image("path_to_your_logo_image.png", use_column_width=True)  # Add your logo here. Replace with correct path.
+# Logo (Centered with defined size)
+st.image("Gemini_Generated_Smart_ATS_Image.jpg", width=300)  # Adjust width as needed
 
 st.markdown(f"<p style='text-align:center;color:{textColor};'>Analyze and Boost your Resume against Job Descriptions!</p>", unsafe_allow_html=True)
 st.write("---")
