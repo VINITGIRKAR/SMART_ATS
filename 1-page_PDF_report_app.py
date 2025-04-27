@@ -57,6 +57,18 @@ def create_prompt(resume_text, job_description):
     {job_description}
     """
 
+def create_improvement_prompt(resume_text, job_description):
+    return f"""
+    Suggest 5 improvements to boost the following resume for the given job description. 
+    The suggestions should be actionable and help the candidate improve their chances of matching the job description.
+
+    Resume:
+    {resume_text}
+
+    Job Description:
+    {job_description}
+    """
+
 def generate_pdf_report(result):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -152,7 +164,7 @@ with upload_tab:
     jd = st.text_area("Paste Job Description", height=200)
     uploaded_files = st.file_uploader("Upload one or multiple resumes (PDF/DOCX)", type=["pdf", "docx"], accept_multiple_files=True)
 
-    col1, col2, col3 = st.columns([1,2,1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         analyze = st.button("🚀 Start Analysis", use_container_width=True)
 
@@ -170,6 +182,10 @@ with upload_tab:
                         try:
                             result = json.loads(response)
                             result['filename'] = uploaded_file.name
+                            # Get Improvement Suggestions
+                            improvement_prompt = create_improvement_prompt(resume_text, jd)
+                            improvement_response = get_gemini_response(improvement_prompt)
+                            result['improvement_suggestions'] = improvement_response
                         except:
                             result = {"filename": uploaded_file.name, "raw_response": response}
                         st.session_state.batch_results.append(result)
@@ -223,6 +239,10 @@ with results_tab:
                 st.subheader("🤐 Profile Summary")
                 st.info(result.get('Profile Summary', 'No summary provided.'))
 
+                # Improvement Suggestions
+                st.subheader("💡 Suggested Improvements")
+                st.info(result.get('improvement_suggestions', 'No improvement suggestions available.'))
+
                 # PDF Download Button
                 pdf_buffer = generate_pdf_report(result)
                 st.download_button(
@@ -260,12 +280,13 @@ with results_tab:
                 "Filename": result.get('filename', ''),
                 "JD Match (%)": f"{match:.1f}",
                 "Missing Keywords": ", ".join(result.get('MissingKeywords', [])),
-                "Profile Summary": result.get('Profile Summary', '').replace('\n', ' ').strip()
+                "Profile Summary": result.get('Profile Summary', '').replace('\n', ' ').strip(),
+                "Improvement Suggestions": result.get('improvement_suggestions', 'No suggestions')
             })
 
         if csv_data:
             df = pd.DataFrame(csv_data)
-            df = df[["Filename", "JD Match (%)", "Missing Keywords", "Profile Summary"]]
+            df = df[["Filename", "JD Match (%)", "Missing Keywords", "Profile Summary", "Improvement Suggestions"]]
             st.download_button(
                 label="📄 Download Batch Report (CSV)",
                 data=df.to_csv(index=False),
