@@ -7,15 +7,16 @@ from dotenv import load_dotenv
 import json
 import time
 import plotly.express as px
+import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
 
 # Load environment variables
 load_dotenv()
+
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Functions
 def get_gemini_response(input_text):
     model = genai.GenerativeModel('gemini-1.5-flash')
     response = model.generate_content(input_text)
@@ -61,7 +62,7 @@ def generate_pdf_report(result):
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    c.setFont("Helvetica-Bold", 18)
+    c.setFont("Helvetica-Bold", 20)
     c.drawCentredString(width/2, height-50, "Resume Analysis Report")
 
     c.setFont("Helvetica", 12)
@@ -81,7 +82,7 @@ def generate_pdf_report(result):
         if keyword.strip():
             text.textLine(f"• {keyword.strip()}")
     c.drawText(text)
-    
+
     y = text.getY() - 20
     c.drawString(50, y, "Profile Summary:")
     y -= 20
@@ -172,7 +173,7 @@ with upload_tab:
                         except:
                             result = {"filename": uploaded_file.name, "raw_response": response}
                         st.session_state.batch_results.append(result)
-                st.success("\u2705 Analysis Completed!")
+                st.success("✅ Analysis Completed!")
                 time.sleep(1)
                 st.balloons()
 
@@ -222,10 +223,10 @@ with results_tab:
                 st.subheader("🤐 Profile Summary")
                 st.info(result.get('Profile Summary', 'No summary provided.'))
 
-                # Download PDF Report
+                # PDF Download Button
                 pdf_buffer = generate_pdf_report(result)
                 st.download_button(
-                    label="📄 Download PDF Report",
+                    label="📄 Download Individual PDF Report",
                     data=pdf_buffer,
                     file_name=f"{result.get('filename', 'resume')}_report.pdf",
                     mime="application/pdf",
@@ -234,7 +235,9 @@ with results_tab:
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Full batch JSON download
+        # --- Download Buttons Section ---
+
+        # Download JSON
         st.download_button(
             label="📦 Download Full Batch Report (JSON)",
             data=json.dumps(st.session_state.batch_results, indent=4),
@@ -242,9 +245,37 @@ with results_tab:
             mime="application/json",
             use_container_width=True
         )
+
+        # Download Clean CSV
+        csv_data = []
+        for result in st.session_state.batch_results:
+            if "raw_response" in result:
+                continue
+            try:
+                match = float(result.get('JD Match', '0').replace('%', '').strip())
+            except:
+                match = 0.0
+
+            csv_data.append({
+                "Filename": result.get('filename', ''),
+                "JD Match (%)": f"{match:.1f}",
+                "Missing Keywords": ", ".join(result.get('MissingKeywords', [])),
+                "Profile Summary": result.get('Profile Summary', '').replace('\n', ' ').strip()
+            })
+
+        if csv_data:
+            df = pd.DataFrame(csv_data)
+            df = df[["Filename", "JD Match (%)", "Missing Keywords", "Profile Summary"]]
+            st.download_button(
+                label="📄 Download Batch Report (CSV)",
+                data=df.to_csv(index=False),
+                file_name="batch_resume_analysis.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
     else:
         st.info("📝 Please upload and analyze resumes first.")
 
 # Footer
-st.markdown("<div class='footer'>Made with ❤️ using Streamlit and Gemini 1.5</div>", unsafe_allow_html=True)
-
+st.markdown("<div style='text-align:center;color:gray;margin-top:30px;'>Made with ❤️ using Streamlit and Gemini 1.5</div>", unsafe_allow_html=True)
