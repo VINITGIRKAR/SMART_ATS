@@ -14,8 +14,9 @@ from io import BytesIO
 
 # Load environment variables
 load_dotenv()
-
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+# ===== Functions =====
 
 def get_gemini_response(input_text):
     model = genai.GenerativeModel('gemini-1.5-flash')
@@ -112,60 +113,74 @@ def generate_pdf_report(result):
     buffer.seek(0)
     return buffer
 
-# Streamlit Config
+# ===== Streamlit App Config =====
+
 st.set_page_config(page_title="Smart ATS", page_icon="🧠", layout="centered")
 
-# Theme Toggle
+# Theme settings
 theme = st.sidebar.selectbox("🌗 Select Theme", ["Light", "Dark"])
 primaryColor = "#4CAF50" if theme == "Light" else "#90CAF9"
 backgroundColor = "#ffffff" if theme == "Light" else "#0e1117"
 textColor = "#000000" if theme == "Light" else "#ffffff"
 
-# Custom CSS
+# Custom CSS including Blue Button styling
 st.markdown(f"""
-<style>
-body {{
-    background: {backgroundColor};
-    color: {textColor};
-    font-family: 'Poppins', sans-serif;
-}}
-h1 {{
-    color: {primaryColor};
-    text-align: center;
-}}
-.card {{
-    background: #ffffff10;
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-}}
-.footer {{
-    text-align: center;
-    font-size: 14px;
-    margin-top: 50px;
-    color: {textColor};
-}}
-img {{
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 300px;  /* Adjust logo width */
-    height: auto;  /* Keep the aspect ratio */
-    padding: 20px 0;
-}}
-</style>
+    <style>
+    body {{
+        background-color: {backgroundColor};
+        color: {textColor};
+        font-family: 'Poppins', sans-serif;
+    }}
+    h1 {{
+        color: {primaryColor};
+        text-align: center;
+    }}
+    div.stButton > button {{
+        background-color: #2196F3; /* Blue color */
+        color: white;
+        height: 50px;
+        width: 100%;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        transition: all 0.3s ease-in-out;
+    }}
+    div.stButton > button:hover {{
+        background-color: #1769aa;
+        transform: scale(1.03);
+    }}
+    .card {{
+        background: #ffffff10;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }}
+    .footer {{
+        text-align: center;
+        font-size: 14px;
+        margin-top: 50px;
+        color: {textColor};
+    }}
+    img {{
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 300px;
+        padding: 20px 0;
+    }}
+    </style>
 """, unsafe_allow_html=True)
 
-# Title
+# ===== App Title and Header =====
+
 st.markdown("<h1>Smart ATS 🧠</h1>", unsafe_allow_html=True)
-
-# Logo (Centered with defined size)
-st.image("https://www.smartats.io/blog/c29581a3a0c08605647b3cf5845e39bd.png", width=700)  # Adjust width as needed
-
+st.image("https://www.smartats.io/blog/c29581a3a0c08605647b3cf5845e39bd.png", width=700)
 st.markdown(f"<p style='text-align:center;color:{textColor};'>Analyze and Boost your Resume against Job Descriptions!</p>", unsafe_allow_html=True)
 st.write("---")
 
-# Tabs
+# ===== TABS =====
+
 upload_tab, results_tab = st.tabs(["📥 Upload & Analyze", "📊 Results"])
 
 if 'batch_results' not in st.session_state:
@@ -210,10 +225,7 @@ with results_tab:
 
     if st.session_state.batch_results:
         for result in st.session_state.batch_results:
-            st.markdown(f"""
-            <div class='card'>
-            <h3>{'📚 ' + result.get('filename', 'Resume')}</h3>
-            """, unsafe_allow_html=True)
+            st.markdown(f"<div class='card'><h3>{'📚 ' + result.get('filename', 'Resume')}</h3>", unsafe_allow_html=True)
 
             if "raw_response" in result:
                 st.warning("Couldn't parse this resume properly.")
@@ -226,13 +238,7 @@ with results_tab:
                 except:
                     match_percentage = 0.0
 
-                if match_percentage >= 85:
-                    badge = "🟢 Excellent"
-                elif match_percentage >= 60:
-                    badge = "🟡 Good"
-                else:
-                    badge = "🔴 Needs Improvement"
-
+                badge = "🟢 Excellent" if match_percentage >= 85 else "🟡 Good" if match_percentage >= 60 else "🔴 Needs Improvement"
                 st.subheader(f"📊 JD Match: {match_percentage:.1f}% ({badge})")
                 fig = px.pie(values=[match_percentage, 100-match_percentage], names=['Match', 'Gap'], title='Match Overview')
                 st.plotly_chart(fig, use_container_width=True)
@@ -267,8 +273,6 @@ with results_tab:
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # --- Download Buttons Section ---
-
         # Download JSON
         st.download_button(
             label="📦 Download Full Batch Report (JSON)",
@@ -278,7 +282,7 @@ with results_tab:
             use_container_width=True
         )
 
-        # Download Clean CSV
+        # Download CSV
         csv_data = []
         for result in st.session_state.batch_results:
             if "raw_response" in result:
