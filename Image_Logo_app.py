@@ -149,7 +149,7 @@ img {{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 350px;  /* Adjust logo width */
+    width: 300px;  /* Adjust logo width */
     height: auto;  /* Keep the aspect ratio */
     padding: 20px 0;
 }}
@@ -160,7 +160,7 @@ img {{
 st.markdown("<h1>Smart ATS 🧠</h1>", unsafe_allow_html=True)
 
 # Logo (Centered with defined size)
-st.image("Gemini_Generated_Smart_ATS_Image.jpg", width=300)  # Adjust width as needed
+st.image("https://www.smartats.io/blog/c29581a3a0c08605647b3cf5845e39bd.png", width=700)  # Adjust width as needed
 
 st.markdown(f"<p style='text-align:center;color:{textColor};'>Analyze and Boost your Resume against Job Descriptions!</p>", unsafe_allow_html=True)
 st.write("---")
