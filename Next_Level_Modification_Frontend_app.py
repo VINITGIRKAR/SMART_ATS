@@ -264,10 +264,10 @@ with upload_tab:
                     else:
                         st.error(f"⚠️ Could not extract text from {uploaded_file.name}.")
                 progress_bar.progress((i + 1) / num_files)
-            st.success("🎉 Batch analysis completed!")
+            st.success("🎉 Analysis Completed!")
             time.sleep(1)
             st.balloons()
-            st.switch_page("app.py?page=📊 Results") # Programmatically switch to the results tab
+            st.switch_page("pages/Results.py")
 
 with results_tab:
     st.header("📊 Analysis Results")
