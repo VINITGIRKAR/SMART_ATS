@@ -118,79 +118,99 @@ def generate_pdf_report(result):
 
 st.set_page_config(page_title="Smart ATS Ultra 🚀", page_icon="🧠", layout="centered")
 
-# Custom CSS for Premium Look
-st.markdown("""
-<style>
-body {
-    background-color: #f5f7fa;
-    color: #333333;
-    font-family: 'Poppins', sans-serif;
-}
+# Light/Dark mode toggle
+mode = st.sidebar.selectbox("🌗 Choose Theme:", ("Light Mode", "Dark Mode"))
 
-h1, h2, h3 {
-    color: #4f46e5;
-    text-align: center;
-}
+# Custom CSS
+if mode == "Light Mode":
+    st.markdown("""
+    <style>
+    body {
+        background-color: #f5f7fa;
+        color: #333333;
+        font-family: 'Poppins', sans-serif;
+    }
+    .card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    div.stButton > button {
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 0.8em 1.2em;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    div.stButton > button:has(span:contains("🚀 Start Analysis")) {
+        background-color: #1E90FF;
+        color: white;
+    }
+    div.stButton > button:has(span:contains("📤 Upload Resumes")) {
+        background-color: #28a745;
+        color: white;
+    }
+    div.stButton > button:has(span:contains("📄 Download")) {
+        background-color: #800080;
+        color: white;
+    }
+    div.stButton > button:hover {
+        transform: scale(1.05);
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-.card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-div.stButton > button {
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 0.8em 1.2em;
-    margin-top: 10px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* START ANALYSIS - BLUE */
-div.stButton > button:has(span:contains("🚀 Start Analysis")) {
-    background-color: #1E90FF;
-    color: white;
-    border: none;
-}
-div.stButton > button:has(span:contains("🚀 Start Analysis")):hover {
-    background-color: #187bcd;
-    transform: scale(1.05);
-}
-
-/* UPLOAD - GREEN */
-div.stButton > button:has(span:contains("📤 Upload Resumes")) {
-    background-color: #28a745;
-    color: white;
-    border: none;
-}
-div.stButton > button:has(span:contains("📤 Upload Resumes")):hover {
-    background-color: #218838;
-    transform: scale(1.05);
-}
-
-/* DOWNLOAD - PURPLE */
-div.stButton > button:has(span:contains("📄 Download")) {
-    background-color: #800080;
-    color: white;
-    border: none;
-}
-div.stButton > button:has(span:contains("📄 Download")):hover {
-    background-color: #660066;
-    transform: scale(1.05);
-}
-</style>
-""", unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+    body {
+        background-color: #1e1e1e;
+        color: #ffffff;
+        font-family: 'Poppins', sans-serif;
+    }
+    .card {
+        background: #2e2e2e;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+        margin-bottom: 30px;
+    }
+    div.stButton > button {
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 0.8em 1.2em;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(255,255,255,0.2);
+    }
+    div.stButton > button:has(span:contains("🚀 Start Analysis")) {
+        background-color: #1E90FF;
+        color: white;
+    }
+    div.stButton > button:has(span:contains("📤 Upload Resumes")) {
+        background-color: #28a745;
+        color: white;
+    }
+    div.stButton > button:has(span:contains("📄 Download")) {
+        background-color: #800080;
+        color: white;
+    }
+    div.stButton > button:hover {
+        transform: scale(1.05);
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # -------------- Main App Layout --------------
 
-st.markdown("<h1>Smart ATS Ultra 🧠🚀</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;'>Smart ATS Ultra 🧠🚀</h1>", unsafe_allow_html=True)
 st.image("https://www.smartats.io/blog/c29581a3a0c08605647b3cf5845e39bd.png", width=700)
-
-st.markdown("<p style='text-align:center;color:gray;'>Analyze and supercharge your resume!</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:gray;'>Analyze and supercharge your resume easily!</p>", unsafe_allow_html=True)
 st.write("---")
 
 # Tabs
@@ -270,7 +290,6 @@ with results_tab:
                 st.subheader("💡 Suggested Improvements")
                 st.info(result.get('improvement_suggestions', 'No suggestions available.'))
 
-                # PDF Download
                 pdf_buffer = generate_pdf_report(result)
                 st.download_button(
                     label="📄 Download Individual PDF Report",
@@ -282,7 +301,6 @@ with results_tab:
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Full Batch Downloads
         st.download_button(
             label="📦 Download Full Batch Report (JSON)",
             data=json.dumps(st.session_state.batch_results, indent=4),
@@ -320,8 +338,10 @@ with results_tab:
     else:
         st.info("📝 Please upload and analyze resumes first.")
 
-# Footer
 st.markdown("<div style='text-align:center;margin-top:30px;color:gray;'>Made with ❤️ using Streamlit & Gemini 1.5 Flash</div>", unsafe_allow_html=True)
 st.markdown("<div style='text-align:center;color:gray;'>© 2023 Smart ATS Ultra</div>", unsafe_allow_html=True)
 st.markdown("<div style='text-align:center;color:gray;'>All rights reserved.</div>", unsafe_allow_html=True)
 st.markdown("<div style='text-align:center;color:gray;'>Follow us on <a href='https://www.smartats.io'>Smart ATS</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Contact us at <a href='mailto:support@smartats.io'>support@smartats.io</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Privacy Policy | Terms of Service</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Disclaimer: This tool is for educational purposes only.</div>", unsafe_allow_html=True)
