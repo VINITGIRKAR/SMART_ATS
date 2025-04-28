@@ -320,4 +320,45 @@ with results_tab:
 
         st.download_button(
             label="📦 Download Full Batch Report (JSON)",
-            data=json.dumps(st.session
+            data=json.dumps(st.session_state.batch_results, indent=4),
+            file_name="batch_resume_analysis.json",
+            mime="application/json",
+            use_container_width=True
+        )
+
+        csv_data = []
+        for result in st.session_state.batch_results:
+            if "raw_response" in result:
+                continue
+            try:
+                match = float(result.get('JD Match', '0').replace('%', '').strip())
+            except:
+                match = 0.0
+            csv_data.append({
+                "Filename": result.get('filename', ''),
+                "JD Match (%)": f"{match:.1f}",
+                "Missing Keywords": ", ".join(result.get('MissingKeywords', [])),
+                "Profile Summary": result.get('Profile Summary', '').replace('\n', ' ').strip(),
+                "Improvement Suggestions": result.get('improvement_suggestions', 'No suggestions')
+            })
+
+        if csv_data:
+            df = pd.DataFrame(csv_data)
+            st.download_button(
+                label="📄 Download Batch Report (CSV)",
+                data=df.to_csv(index=False),
+                file_name="batch_resume_analysis.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    else:
+        st.info("📝 Please upload and analyze resumes first.")
+
+st.markdown("<div style='text-align:center;margin-top:30px;color:gray;'>Made with ❤️ using Streamlit & Gemini 1.5 Flash</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>© 2023 Smart ATS Ultra</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>All rights reserved.</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Follow us on <a href='https://www.smartats.io'>Smart ATS</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Contact us at <a href='mailto:support@smartats.io'>support@smartats.io</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Privacy Policy | Terms of Service</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Disclaimer: This tool is for educational purposes only.</div>", unsafe_allow_html=True)
