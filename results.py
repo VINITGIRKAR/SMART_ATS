@@ -2,7 +2,6 @@ import streamlit as st
 import plotly.express as px
 import json
 import pandas as pd
-from io import BytesIO
 
 # -------------- Main Layout --------------
 st.set_page_config(page_title="Smart ATS Results", page_icon="📊", layout="centered")
@@ -19,8 +18,16 @@ else:
     for result in st.session_state.batch_results:
         st.markdown(f"<div class='card'><h3>📄 {result.get('filename', 'Resume')}</h3>", unsafe_allow_html=True)
 
+        # Parse the raw JSON response
+        raw_response = result.get('raw_response', '')
+        try:
+            analysis_result = json.loads(raw_response.strip('```json\n').strip())
+        except Exception as e:
+            st.error(f"Error parsing JSON: {e}")
+            continue
+
         # Display JD Match with a pie chart
-        match_percentage = result.get('JD Match', "0").replace('%', '')
+        match_percentage = analysis_result.get('JD Match', "0").replace('%', '')
         try:
             match_percentage = float(match_percentage)
         except:
@@ -34,7 +41,7 @@ else:
         st.plotly_chart(fig, use_container_width=True)
 
         # Display Missing Keywords
-        missing_keywords = result.get("MissingKeywords", [])
+        missing_keywords = analysis_result.get("MissingKeywords", [])
         if missing_keywords:
             st.subheader("🔹 Missing Keywords")
             st.write(", ".join(missing_keywords))
@@ -46,11 +53,15 @@ else:
 
         # Display Profile Summary
         st.subheader("🤐 Profile Summary")
-        st.info(result.get('Profile Summary', 'No summary provided.'))
+        st.info(analysis_result.get('Profile Summary', 'No summary provided.'))
 
-        # Display Improvement Suggestions
-        st.subheader("💡 Suggested Improvements")
-        st.info(result.get('improvement_suggestions', 'No suggestions available.'))
+        # Display Improvement Suggestions (if available)
+        improvement_suggestions = result.get('improvement_suggestions', '')
+        if improvement_suggestions:
+            st.subheader("💡 Suggested Improvements")
+            st.info(improvement_suggestions)
+        else:
+            st.info("No suggestions available.")
 
         # Allow users to download individual PDF reports
         st.download_button(
@@ -75,15 +86,23 @@ else:
     # Create and allow downloading a CSV report
     csv_data = []
     for result in st.session_state.batch_results:
+        # Parse the raw JSON response
+        raw_response = result.get('raw_response', '')
         try:
-            match = float(result.get('JD Match', '0').replace('%', '').strip())
+            analysis_result = json.loads(raw_response.strip('```json\n').strip())
+        except Exception as e:
+            st.error(f"Error parsing JSON: {e}")
+            continue
+
+        try:
+            match = float(analysis_result.get('JD Match', '0').replace('%', '').strip())
         except:
             match = 0.0
         csv_data.append({
             "Filename": result.get('filename', ''),
             "JD Match (%)": f"{match:.1f}",
-            "Missing Keywords": ", ".join(result.get('MissingKeywords', [])),
-            "Profile Summary": result.get('Profile Summary', '').replace('\n', ' ').strip(),
+            "Missing Keywords": ", ".join(analysis_result.get('MissingKeywords', [])),
+            "Profile Summary": analysis_result.get('Profile Summary', '').replace('\n', ' ').strip(),
             "Improvement Suggestions": result.get('improvement_suggestions', 'No suggestions')
         })
 
@@ -99,4 +118,9 @@ else:
 
 # Footer Section
 st.markdown("<div style='text-align:center;margin-top:30px;color:gray;'>Made with ❤️ using Streamlit & Gemini 1.5 Flash</div>", unsafe_allow_html=True)
-
+st.markdown("<div style='text-align:center;color:gray;'>© 2023 Smart ATS Ultra</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>All rights reserved.</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Follow us on <a href='https://www.smartats.io'>Smart ATS</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Contact us at <a href='mailto:support@smartats.io'>support@smartats.io</a></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Privacy Policy | Terms of Service</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:gray;'>Disclaimer: This tool is for educational purposes only.</div>", unsafe_allow_html=True)
